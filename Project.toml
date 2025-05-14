@@ -2,3 +2,4 @@
 DifferentialEquations = "0c46a032-eb83-5123-abaf-570d42b7fbaa"
 GLMakie = "e9467ef8-e4e7-5192-8a1a-b1aee30e663a"
 Measurements = "eff96d63-e80a-5855-80a2-b1b0885c5ab7"
+Weave = "44d3d7a6-8a23-5bf8-98c5-b353f8df5ec9"
