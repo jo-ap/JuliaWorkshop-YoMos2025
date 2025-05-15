@@ -4,12 +4,13 @@ author : Johannes Apelt
 date : 19.05.2025
 weave_options: 
     doctype: md2html
+    template: md2html.tpl
 ---
 
 
-# [1] Fundamentals
+## 1 Fundamentals
 
-## [1.1] Some Collection Types 
+### 1.1 Some Collection Types 
 Let's see how vectors, tuples and matrices can be defined.
 ```julia 
 x = [1, 2, 3] # Vector{Int64}
@@ -39,7 +40,7 @@ for i in eachindex(nt)
 end
 ```
 
-## [1.2] Functions
+### 1.2 Functions
 In Julia, functions are objects that map a tuple of arguments to a return
 value. 
 Here are a few example how to define a function. 
@@ -62,12 +63,13 @@ hello("world")
 g(4)
 ```
 
-# [1.3] Composite Types (i.e. Objects) 
+### 1.3 Composite Types (i.e. Objects) 
 Composite types can be defined using Julia's `structs`.
-Like functions, these can be explicitly typed, but not necessarily so.
-Both can be typed parametrically, meaning that we do not have to specify the
-exact type, but we can encode relation of types or make use of the type
-hierarchy. 
+Like functions, these can be explicitly typed, but this is not reqired.
+The compiler tries to deduce what type each variable has (type inference).
+Julia has support for parametric types, which for instance means we do not have
+to specify the exact type, but we can encode relation of types or make use of
+the type hierarchy. 
 The compiler will then call the method that fits the signature of the arguments
 used, which is called multiple dispatch.
 
@@ -75,7 +77,8 @@ To illustrate usage, let's define a type for complex numbers, that simply stores
 real and imaginary part.
 These can be e.g. `Float64` or `Int64` (or other numeric types), but we want
 both real and imaginary part to have the same type. 
-Thus, we use the best fitting supertype of these, which is `Real`.
+Thus, we use the best fitting supertype of these, which is `Real` and allow any
+subtype for the real and imaginary part.
 ```julia 
 mutable struct ComplexNumber{T<:Real}
   re::T 
@@ -87,24 +90,39 @@ For every `struct` definition we automatically get a constructor method with
 the same name. 
 
 ```julia 
-ComplexNumber(1, 0)
+z = ComplexNumber(1, 2)
 ```
+We cann access the fields of a struct by their name. 
+```julia 
+z.re
+```
+```julia 
+z.im
+```
+To make our type more readable, we define the behaviour for displaying our type in the REPL.
+```julia 
+Base.show(io::IO, ::MIME"text/plain", z::ComplexNumber) = print(io, "$(z.re) + $(z.im)i")
+```
+Now this is a lot nicer.
 ```julia 
 ComplexNumber(1.0, 0.0)
 ```
+
 The constructor works for both types, but not if we mix:
 ```julia 
 ComplexNumber(1.0, 0)
 ```
 In fact, the error message tells us exactly what is wrong: There is no method
-that matches the signature of our call.
+that matches the signature of our call. 
+In particular, the second argument's type does not match the type of the first
+one.
 We can easily fix this by providing more constructors.
 
-## [1.4] Multiple Dispatch: A Key Feature of Julia 
+### 1.4 Multiple Dispatch: A Key Feature of Julia 
 
-### Adding Functionality to our `ComplexNumber` Type
+#### 1.4.1 Adding Functionality to our `ComplexNumber` Type
 
-We can add a constructor to allow promotion to the closest super type for our
+We can add a constructor to allow mixing of numeric types. 
 `ComplexNumber` type.
 ```julia 
 function ComplexNumber(r::Real, i::Real)
@@ -112,39 +130,40 @@ function ComplexNumber(r::Real, i::Real)
   return ComplexNumber(r, i)
 end;
 ```
-Note that Julia offers the short notation `...` to unwrap the elements of a collection. 
-Thus we could achieve the same thing more compactly.
+Note that we have specified both arguments to be `Real`, but not parametrically
+as before. 
+Because subtypes of `Real` are matched as well, this now allows to mix numeric
+types.
+The function `promote` parses all arguments to their highest level type or to
+the lowest supertype (the maximum element is `Any` so there always
+exist a common supertype, but parsing may fail nevertheless).
+Thus, we can now do 
+```julia 
+ComplexNumber(0.3, true)
+```
+Note that Julia offers the short notation `x...` to unwrap the elements of a
+collection `x`. 
+Thus, we can achieve the same thing with one line.
 ```julia, eval=false
 ComplexNumber(r::Real, i::Real) = ComplexNumber(promote(r,i)...)
 ```
 
-Now we can do 
-```julia 
-ComplexNumber(0.3, 1)
-```
-because the `promote` function parses the `1` to `1.0` so that both arguments
-have the same type.
-
 We can also add a constructor that can be used when the imaginary part is zero.
 ```julia 
 ComplexNumber(r::Real) = ComplexNumber(r, zero(r))
-```
-
-This becomes more useful if the add some nice features to it, such as pretty printing.
-```julia 
-Base.show(io::IO, ::MIME"text/plain", z::ComplexNumber) = print(io, "$(z.re) + $(z.im)i")
 ComplexNumber(1)
 ```
 
-Due to multiple dispatch, we can also define the behaviour for existing functions.
-Even the binary operator `+` is just a function.
+Due to multiple dispatch, we can easily define the behaviour for existing
+functions operating on our new type.
+Even the binary operator `+` is just a function, so we can define addition with
+our type.
 ```julia 
 import Base: +
 +(x::ComplexNumber, y::ComplexNumber) = ComplexNumber(x.re + y.re, x.im + y.im)
 +(x::ComplexNumber, y::Real) = ComplexNumber(x.re + y, x.im)
 ```
 Now we can add our complex numbers.
-
 ```julia
 ComplexNumber(1, 2) + ComplexNumber(3.0, -1.2)
 ```
@@ -152,7 +171,7 @@ ComplexNumber(1, 2) + ComplexNumber(3.0, -1.2)
 ComplexNumber(1, 2) + 1
 ```
 
-### Another Illustrating Example 
+#### 1.4.2 Another Illustrating Example 
 Lets define a type `Animal` that has subtypes `Dog`, `Cat` and `Mouse`. 
 ```julia 
 abstract type Animal end
@@ -167,10 +186,10 @@ struct Dog  <: Animal
     age::Int64
 end
 ```
-Akin to the game rock, paper, scissor, we want to define who "wins" if two
+Akin to the game rock, paper, scissors, we want to define who "wins" if two
 animals meet. 
 It makes sense to define this function for all animals, because it implements a
-similar routine, and we can make use of multiple dispatch to decide what's
+similar routine, and we can make use of multiple dispatch to decide what is
 happening depending on the input types.
 ```julia 
 meet(x::Mouse, y::Dog) = println("Mouse \"$(x.name)\" scares dog \"$(y.name)\" away.")
@@ -181,7 +200,7 @@ Interactions are symmetric, which we can implement using the supertype.
 ```julia 
 meet(x::Animal, y::Animal) = meet(y, x)
 ```
-Now we can see what's happening.
+Now these animals can meet.
 ```julia 
 alice = Cat("Alice")
 bob = Dog("Bob", 1)
@@ -199,16 +218,19 @@ meet(alice, jerry)
 ```julia 
 meet(bill, alice)
 ```
-The macro `@which` or function `which` shows us which method is actually
+The macro `@which` or function `which` show us which method is actually
 called (this does not work in the `Weave` sandbox used to generate this file).
 ```julia, eval=false
-@which meet(alice, bob)
-@which meet(bob, alice)
+@which meet(alice, bob) # meet(::Animal, ::Animal)
+@which meet(bob, alice) # meet(::Dog, ::Cat)
 ```
 
-# [2] ODE Simulations and Plots
+## 2 ODE Simulations and Plots
+
+### 2.1 First Steps
 Julia has different possibilities to load code. 
-To export all definitions from a package, we can use the keyword `using`.
+To import all explicitly exported definitions from a package, we can use the
+keyword `using`.
 Here, we use a package for numerical simulations of ODEs (and many other
 dynamical systems) and a plotting framework.
 ```julia 
@@ -221,11 +243,12 @@ Makie.inline!(true)
 ```
 
 We define the right-hand side of an ODE system with in-place computation of the
-rate of change as follows (`DifferentialEquations` expects this specific signature).
+rate of change as follows (`DifferentialEquations` expects this specific
+signature).
 ```julia 
 function f!(du, u, p, t)
     x, y = u # we can unpack vectors or tuples like this
-    ρ, α, θ, δ, γ = p # julia has support for unicode
+    ρ, α, θ, δ, γ = p # julia has support for unicode 🥳
     du .= [
         ρ*x*(1-x) - α/(θ + x)*x*y
         -δ*y + γ*α/(θ + x)*x*y
@@ -280,7 +303,7 @@ the solution at arbitrary time points.
 sol(10.12345)
 ```
 
-## Integration between Packages
+### 2.2 Integration with `Measurements.jl`
 Because Julia uses multiple dispatch, it is generally easy to extend existing
 data types or to use existing functions for new types. 
 A nice example for this is illustrated with the package `Measurements.jl`, that
@@ -313,7 +336,7 @@ axislegend(ax)
 fig
 ```
 
-## Interactive GUI for ODE Simulations
+## 3 Interactive GUI for ODE Simulations
 `Makie` has support for `Observable` types. 
 With these, we can propagate changes automatically and update dependent
 variables.
@@ -353,9 +376,9 @@ function odegui(f!::Function, u0::NamedTuple, p::NamedTuple;
     end
 
     # add slider for tspan with hard coded choices
-    T_end_slider = SliderGrid(fig[2,1], (label = "T", range = [10, 100, 200, 500, 1000, 2000, 5000, 10000], format = x->"$x"))
+    T_end_slider = SliderGrid(fig[2,1], (label = "T", range = [10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000], format = x->"$x"))
     T_end = T_end_slider.sliders[1].value
-    set_close_to!(T_end_slider.sliders[1], 100)
+    set_close_to!(T_end_slider.sliders[1], 50)
 
     # solve ode problem with parameters defined by slider
     # the @lift macro can be used to define variables that depend on other observable variables and need to be updated
@@ -369,7 +392,7 @@ function odegui(f!::Function, u0::NamedTuple, p::NamedTuple;
     series!(ax, sol, labels=["x", "y"], color=Makie.wong_colors()[1:2], linewidth=2)
     axislegend(ax)
 
-    # update axes range on change
+    # update plot ranges on change
     on(sol) do sol
         y_range = [minimum(sol), maximum(sol)]
         y_pad = 0.05*(y_range[2] - y_range[1])
@@ -393,7 +416,6 @@ p = (ρ=1.0, α=2.0, θ=1.0, δ=0.5, γ=1.0)
 tspan = (0.0, 50.0)
 
 odegui(f!, u0, p)
-
 ```
 
 
