@@ -28,3 +28,16 @@ to activate the project environment, followed by
 ```
 The latter command obtains and installs the packages that belong to the
 environment defined by the project and manifest file.
+
+## Workshop Content 
+The practical part of the workshop consists of three parts:
+1. The fundamentals of Julia (with focus on multiple dispatch and its features)
+2. Numerical Simulations of ODEs and plotting; an example of how easy it is to integrate different packages in Julia
+3. Building an interactive GUI that displays numerical solutions of an ODE
+   system (with sliders for the parameters and initial condition)
+
+You find the source code in the file `yomos.jl`. 
+The static html file `yomos.html` is generated with `Weave.jl` from the Julia
+markdown file `yomos.jmd`.  
+This captures the output of the Julia code chunks, so have a look at this file
+if you don't want to install Julia.
