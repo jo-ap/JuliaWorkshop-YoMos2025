@@ -1,0 +1,30 @@
+# Julia Workshop @ YoMos 2025 
+
+This repository contains material for the workshop. 
+
+## Installing Julia 
+You can install an up-to-date version of Julia by following the instructions on
+the official webpage <https://julialang.org/install/>.
+
+If you use VSCode or VSCodium, you can install an extension that brings a lot
+of nice features and language tooling to the editor:
+<https://www.julia-vscode.org/>. 
+However, Julia is supported by other editors as well (see the 'Editors and
+IDEs' section at <https://julialang.org/>).
+
+## Running Code 
+In order to install the packages needed for this workshop, pull this repository
+and navigate to the directory. 
+Start a Julia session there (or navigate to the directory using the function `cd("<path-to-dir>")`). 
+Then, type `]` in the REPL to activate the package mode. 
+Since this directory contains a project and manifest file, you can install the
+necessary packages by simply typing 
+```julia REPL
+(@v1.11) pkg> activate .
+```
+to activate the project environment, followed by 
+```julia REPL
+(JuliaWorkshop_YoMos2025) pkg> instantiate 
+```
+The latter command obtains and installs the packages that belong to the
+environment defined by the project and manifest file.
