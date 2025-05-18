@@ -92,19 +92,16 @@ the same name.
 ```julia 
 z = ComplexNumber(1, 2)
 ```
-We cann access the fields of a struct by their name. 
+We can access the fields of a struct by their name. 
 ```julia 
 z.re
 ```
 ```julia 
 z.im
 ```
-To make our type more readable, we define the behaviour for displaying our type in the REPL.
+We can easily define how our type should be displayed to the REPL.
 ```julia 
 Base.show(io::IO, ::MIME"text/plain", z::ComplexNumber) = print(io, "$(z.re) + $(z.im)i")
-```
-Now this is a lot nicer.
-```julia 
 ComplexNumber(1.0, 0.0)
 ```
 
@@ -123,7 +120,6 @@ We can easily fix this by providing more constructors.
 #### 1.4.1 Adding Functionality to our `ComplexNumber` Type
 
 We can add a constructor to allow mixing of numeric types. 
-`ComplexNumber` type.
 ```julia 
 function ComplexNumber(r::Real, i::Real)
   r, i = promote(r, i)
@@ -132,8 +128,8 @@ end;
 ```
 Note that we have specified both arguments to be `Real`, but not parametrically
 as before. 
-Because subtypes of `Real` are matched as well, this now allows to mix numeric
-types.
+Because subtypes of `Real` are matched as well, this does now allow to call the
+constructor with arguments having a different sybtype of `Real`.
 The function `promote` parses all arguments to their highest level type or to
 the lowest supertype (the maximum element is `Any` so there always
 exist a common supertype, but parsing may fail nevertheless).
@@ -256,8 +252,8 @@ function f!(du, u, p, t)
     return nothing # we return `nothing` because we update `du` in-place 
 end;
 ```
-Note that functions mutating one of its arguments are typically indicated by
-using at the end of their name `!`.
+Note that a function mutating one of its arguments are typically indicated by
+an exclamation mark at the end of their name.
 The `.` is syntactic sugar for element wise operations. 
 Here we need this, because we want to overwrite the entries of the vector `du`
 (without the dot, this would create a new vector).
@@ -270,7 +266,7 @@ p = (ρ=1.0, α=2.0, θ=1.0, δ=0.5, γ=1.0)
 tspan = (0.0, 50.0);
 ```
 Now we create an ODE problem and solve it using the default algorithm. 
-We can also specify at which time points we want to now the solution (for
+We can also specify at which time points we want to get the solution (for
 smooth plots).
 ```julia 
 problem = ODEProblem(f!, u0, tspan, p)
@@ -289,7 +285,7 @@ Makie.convert_arguments(T::Type{<:Series}, sol::ODESolution) = Makie.convert_arg
 ```
 ```julia
 fig = Figure();
-ax = Axis(fig[1,1], xlabel="time", ylabel="population density", title="The MacArthur-Rosenzweig Model")
+ax = Axis(fig[1,1], xlabel="time", ylabel="population density", title="The Rosenzweig–MacArthur Model")
 series!(ax, sol; 
         labels=["x", "y"],
         color=color=Makie.wong_colors()[1:2],
@@ -307,7 +303,7 @@ sol(10.12345)
 Because Julia uses multiple dispatch, it is generally easy to extend existing
 data types or to use existing functions for new types. 
 A nice example for this is illustrated with the package `Measurements.jl`, that
-allows us to employ linear error propagation without much hassle.
+allows to employ linear error propagation without much effort.
 As we will see, we don't have to change much code compared to the example
 above.
 
@@ -364,7 +360,7 @@ function odegui(f!::Function, u0::NamedTuple, p::NamedTuple;
     ]
     # organize sliders in a grid
     lsgrid = SliderGrid(fig[1:2,2], sliders..., tellheight=false)
-    # sliders values as Vector{Observable{Float64}}
+    # slider values as Vector{Observable{Float64}}
     sliderobservables = [s.value for s in lsgrid.sliders]
     # slider values as Observable{Vector{Float64}} (listens to changes in any slider)
     slider_values = lift(sliderobservables...) do slvalues...
@@ -412,7 +408,7 @@ Now we can interactively explore the model.
 
 ```julia 
 u0 = (x=0.1, y=0.2)
-p = (ρ=1.0, α=2.0, θ=1.0, δ=0.5, γ=1.0)
+p = (ρ=1.0, α=2.0, θ=1.5, δ=0.5, γ=1.0)
 tspan = (0.0, 50.0)
 
 odegui(f!, u0, p)

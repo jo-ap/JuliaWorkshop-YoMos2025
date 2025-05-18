@@ -126,6 +126,7 @@ function f!(du, u, p, t)
     return nothing # we return `nothing` because we update `du` in-place 
 end;
 
+
 # initial conditions, parameters and time span
 u0 = [0.1,0.2]
 p = (ρ=1.0, α=2.0, θ=1.0, δ=0.5, γ=1.0)
@@ -242,7 +243,7 @@ function odegui(f!::Function, u0::NamedTuple, p::NamedTuple;
 end
 
 u0 = (x=0.1, y=0.2)
-p = (ρ=1.0, α=2.0, θ=1.0, δ=0.5, γ=1.0)
+p = (ρ=1.0, α=2.0, θ=1.5, δ=0.5, γ=1.0)
 tspan = (0.0, 50.0)
 
 odegui(f!, u0, p)
